@@ -15,6 +15,12 @@ const Buttons: React.FC = () => {
         setShowIncomeForm(true);
         setShowExpensesForm(false);
     };
+    const [expenseName, setExpenseName] = useState('');
+    const [expenseAmount, setExpenseAmount] = useState('');
+    const [expenseDate, setExpenseDate] = useState('');
+    const [incomeSource, setIncomeSource] = useState('');
+    const [incomeAmount, setIncomeAmount] = useState('');
+    const [incomeDate, setIncomeDate] = useState('');
 
     return (
         <div>
