@@ -2,10 +2,15 @@ import React, { useState } from 'react';
 import './Buttons.css';
 import '../components/form.css';
 import '../App.css';
-// import { expenseName, expenseAmount, expenseDate, incomeSource, incomeAmount, incomeDate } from './functions';
-// import { useDispatch } from 'react-redux';
-// import { addExpense, addIncome } from '../redux/actions';
 import DisplayTransactions from './DisplayTransactions';
+
+interface Transaction {
+    type: 'income' | 'expense';
+    name: string;
+    amount: number;
+    date: Date;
+}
+
 const Buttons: React.FC = () => {
     const [showExpensesForm, setShowExpensesForm] = useState(false);
     const [showIncomeForm, setShowIncomeForm] = useState(false);
@@ -19,12 +24,43 @@ const Buttons: React.FC = () => {
         setShowIncomeForm(true);
         setShowExpensesForm(false);
     };
+
     const [expenseName, setExpenseName] = useState('');
     const [expenseAmount, setExpenseAmount] = useState('');
     const [expenseDate, setExpenseDate] = useState('');
     const [incomeSource, setIncomeSource] = useState('');
     const [incomeAmount, setIncomeAmount] = useState('');
     const [incomeDate, setIncomeDate] = useState('');
+
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+    const handleExpensesSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const newExpense: Transaction = {
+            type: 'expense',
+            name: expenseName,
+            amount: parseFloat(expenseAmount),
+            date: new Date(expenseDate),
+        };
+        setTransactions([...transactions, newExpense]);
+        setExpenseName('');
+        setExpenseAmount('');
+        setExpenseDate('');
+    };
+
+    const handleIncomeSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const newIncome: Transaction = {
+            type: 'income',
+            name: incomeSource,
+            amount: parseFloat(incomeAmount),
+            date: new Date(incomeDate),
+        };
+        setTransactions([...transactions, newIncome]);
+        setIncomeSource('');
+        setIncomeAmount('');
+        setIncomeDate('');
+    };
 
     return (
         <div>
@@ -61,11 +97,13 @@ const Buttons: React.FC = () => {
                 </button>
             </div>
             {showExpensesForm && (
-                <form className="expenses-form" >
+                <form className="expenses-form" onSubmit={handleExpensesSubmit} >
                     <h2>Expenses Form</h2>
+                    
                     <div className="form-group">
                         <label htmlFor="expenseName">Expense Name:</label>
                         <input 
+                            required
                             type="text" 
                             id="expenseName" 
                             name="expenseName" 
@@ -75,7 +113,8 @@ const Buttons: React.FC = () => {
                     </div>
                     <div className="form-group">
                         <label htmlFor="expenseAmount">Amount:</label>
-                        <input 
+                        <input
+                            required
                             type="number" 
                             id="expenseAmount" 
                             name="expenseAmount" 
@@ -86,6 +125,7 @@ const Buttons: React.FC = () => {
                     <div className="form-group">
                         <label htmlFor="expenseDate">Date:</label>
                         <input 
+                            required
                             type="date" 
                             id="expenseDate" 
                             name="expenseDate" 
@@ -94,28 +134,15 @@ const Buttons: React.FC = () => {
                         />
                     </div>
                     <button type="submit" className="submit-button">Add Expense</button>
-                    {/* Add your expenses form fields here */}
-                    {/* <div className="form-group">
-                        <label htmlFor="expenseName">Expense Name:</label>
-                        <input type="text" id="expenseName" name="expenseName" />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="expenseAmount">Amount:</label>
-                        <input type="number" id="expenseAmount" name="expenseAmount" />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="expenseDate">Date:</label>
-                        <input type="date" id="expenseDate" name="expenseDate" />
-                    </div>
-                    <button type="submit" className="submit-button">Add Expense</button> */}
                 </form>
             )}
             {showIncomeForm && (
-                <form className="income-form">
+                <form className="income-form" onSubmit={handleIncomeSubmit}>
                     <h2>Income Form</h2>
                     <div className="form-group">
                         <label htmlFor="incomeSource">Income Source:</label>
                         <input 
+                            required
                             type="text" 
                             id="incomeSource" 
                             name="incomeSource" 
@@ -126,6 +153,7 @@ const Buttons: React.FC = () => {
                     <div className="form-group">
                         <label htmlFor="incomeAmount">Amount:</label>
                         <input 
+                            required
                             type="number" 
                             id="incomeAmount" 
                             name="incomeAmount" 
@@ -136,6 +164,7 @@ const Buttons: React.FC = () => {
                     <div className="form-group">
                         <label htmlFor="incomeDate">Date:</label>
                         <input 
+                            required
                             type="date" 
                             id="incomeDate" 
                             name="incomeDate" 
@@ -146,7 +175,7 @@ const Buttons: React.FC = () => {
                     <button type="submit" className="submit-button">Add Income</button>
                 </form>
             )}
-            <DisplayTransactions transactions={[]} />
+            <DisplayTransactions transactions={transactions} />
         </div>
     );
 };
