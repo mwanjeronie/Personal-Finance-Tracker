@@ -1,17 +1,17 @@
 form {
-    margin-bottom: 60px; /* Adjust this value based on the height of your buttons */
+  margin-bottom: 60px; /* Adjust this value based on the height of your buttons */
 }
 
 .buttons {
-    position: center;
-    bottom: 0;
-    width: 100%;
-    background-color: #f1f1f1; /* Adjust the background color as needed */
-    padding: 10px 0;
-    text-align: center;
-    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow for better visibility */
+  position: center;
+  bottom: 0;
+  width: 100%;
+  background-color: #f1f1f1; /* Adjust the background color as needed */
+  padding: 10px 0;
+  text-align: center;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow for better visibility */
 }
 
 .buttons button {
-    margin: 0 10px; /* Adjust the spacing between buttons as needed */
+  margin: 0 10px; /* Adjust the spacing between buttons as needed */
 }

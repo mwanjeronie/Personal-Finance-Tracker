@@ -1,65 +1,158 @@
-import React, { useState, useEffect } from 'react';
+import type React from "react"
 
-interface Transaction {
-    type: 'income' | 'expense';
-    name: string;
-    amount: number;
-    date: Date;
+import { useState } from "react"
+import type { Transaction } from "../App"
+import { Trash } from "../icons/Icons"
+import "./DisplayTransactions.css"
+
+interface DisplayTransactionsProps {
+  transactions: Transaction[]
+  onDeleteTransaction: (id: string) => void
 }
 
-interface Props {
-    transactions: Transaction[];
-}
+const DisplayTransactions: React.FC<DisplayTransactionsProps> = ({ transactions, onDeleteTransaction }) => {
+  const [filter, setFilter] = useState<"all" | "income" | "expense">("all")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [sortBy, setSortBy] = useState<"date" | "amount">("date")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
 
-const DisplayTransactions: React.FC<Props> = ({ transactions = [] }) => {
-    const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(transactions);
+  const filteredTransactions = transactions
+    .filter((transaction) => {
+      // Apply type filter
+      if (filter !== "all" && transaction.type !== filter) {
+        return false
+      }
 
-    useEffect(() => {
-        setFilteredTransactions(transactions);
-    }, [transactions]);
+      // Apply search filter
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase()
+        return (
+          transaction.name.toLowerCase().includes(searchLower) ||
+          transaction.category.toLowerCase().includes(searchLower)
+        )
+      }
 
-    const filterTransactions = (type: 'income' | 'expense' | 'all') => {
-        if (type === 'all') {
-            setFilteredTransactions(transactions);
-        } else {
-            const filtered = transactions.filter(transaction => transaction.type === type);
-            setFilteredTransactions(filtered);
-        }
-    };
+      return true
+    })
+    .sort((a, b) => {
+      // Apply sorting
+      if (sortBy === "date") {
+        return sortOrder === "asc"
+          ? new Date(a.date).getTime() - new Date(b.date).getTime()
+          : new Date(b.date).getTime() - new Date(a.date).getTime()
+      } else {
+        return sortOrder === "asc" ? a.amount - b.amount : b.amount - a.amount
+      }
+    })
 
-    return (
-        <div className='display-transactions' style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '5px' }}>
-            <h3>Transactions History</h3> 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h4>Transactions</h4>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                    <button onClick={() => filterTransactions('all')} style={{ flex: '1 1 auto', padding: '10px 15px', border: 'none', borderRadius: '5px', backgroundColor: '#007bff', color: '#fff', cursor: 'pointer', transition: 'background-color 0.3s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#0056b3'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#007bff'}>
-                        All
-                    </button>
-                    <button onClick={() => filterTransactions('income')} style={{ flex: '1 1 auto', padding: '10px 15px', border: 'none', borderRadius: '5px', backgroundColor: '#28a745', color: '#fff', cursor: 'pointer', transition: 'background-color 0.3s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#218838'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#28a745'}>
-                        Income
-                    </button>
-                    <button onClick={() => filterTransactions('expense')} style={{ flex: '1 1 auto', padding: '10px 15px', border: 'none', borderRadius: '5px', backgroundColor: '#dc3545', color: '#fff', cursor: 'pointer', transition: 'background-color 0.3s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#c82333'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#dc3545'}>
-                        Expenses
-                    </button>
-                </div>
-            </div>
+  const toggleSortOrder = () => {
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+  }
 
-            <div className="transactions" style={{ marginBottom: '10px', padding: '10px', border: '1px solid #ddd', borderRadius: '3px' }}>
-                <ol className='all'>
-                    {filteredTransactions.map((transaction, index) => (
-                        <li key={index}>
-                            <ul className='singleTransaction' style={{ display: 'flex', justifyContent: 'space-between', listStyleType: 'none', padding: '10px', border: '1px solid #ddd', borderRadius: '3px', marginBottom: '10px' }}>
-                                <li>{transaction.name}</li>
-                                <li>{transaction.amount}</li>
-                                <li>{transaction.date.toDateString()}</li>
-                            </ul>
-                        </li>
-                    ))}
-                </ol>
-            </div>
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
+  }
+
+  return (
+    <div className="transactions-container card">
+      <div className="card-header">
+        <h2 className="card-title">Transaction History</h2>
+      </div>
+
+      <div className="transactions-filters">
+        <div className="filter-buttons">
+          <button className={`filter-button ${filter === "all" ? "active" : ""}`} onClick={() => setFilter("all")}>
+            All
+          </button>
+          <button
+            className={`filter-button income ${filter === "income" ? "active" : ""}`}
+            onClick={() => setFilter("income")}
+          >
+            Income
+          </button>
+          <button
+            className={`filter-button expense ${filter === "expense" ? "active" : ""}`}
+            onClick={() => setFilter("expense")}
+          >
+            Expenses
+          </button>
         </div>
-    );
-};
 
-export default DisplayTransactions;
+        <div className="search-container">
+          <input
+            type="text"
+            placeholder="Search transactions..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+        </div>
+      </div>
+
+      <div className="sort-options">
+        <button
+          className={`sort-button ${sortBy === "date" ? "active" : ""}`}
+          onClick={() => {
+            if (sortBy === "date") {
+              toggleSortOrder()
+            } else {
+              setSortBy("date")
+              setSortOrder("desc")
+            }
+          }}
+        >
+          Date {sortBy === "date" && (sortOrder === "asc" ? "↑" : "↓")}
+        </button>
+        <button
+          className={`sort-button ${sortBy === "amount" ? "active" : ""}`}
+          onClick={() => {
+            if (sortBy === "amount") {
+              toggleSortOrder()
+            } else {
+              setSortBy("amount")
+              setSortOrder("desc")
+            }
+          }}
+        >
+          Amount {sortBy === "amount" && (sortOrder === "asc" ? "↑" : "↓")}
+        </button>
+      </div>
+
+      {filteredTransactions.length > 0 ? (
+        <div className="transactions-list">
+          {filteredTransactions.map((transaction) => (
+            <div key={transaction.id} className={`transaction-item ${transaction.type}`}>
+              <div className="transaction-date">{formatDate(transaction.date)}</div>
+              <div className="transaction-details">
+                <div className="transaction-name">{transaction.name}</div>
+                <div className="transaction-category">{transaction.category}</div>
+              </div>
+              <div className="transaction-amount">
+                {transaction.type === "income" ? "+" : "-"}${transaction.amount.toFixed(2)}
+              </div>
+              <button
+                className="delete-button"
+                onClick={() => onDeleteTransaction(transaction.id)}
+                aria-label="Delete transaction"
+              >
+                <Trash />
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="no-transactions">
+          {transactions.length === 0
+            ? "No transactions yet. Add your first transaction using the buttons above."
+            : "No transactions match your filters."}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default DisplayTransactions
